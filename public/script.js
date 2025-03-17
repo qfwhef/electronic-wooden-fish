@@ -5,9 +5,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     const meritMessage = document.getElementById('merit-message');
     const wisdomText = document.getElementById('wisdom-text');
     
-    // 音效
-    const hitSound = new Audio();
-    hitSound.src = 'https://cdn.jsdelivr.net/gh/Jogiter/assets@main/audio/muyu.mp3';
+    // 音效管理
+    const soundManager = {
+        // 音效池，用于管理多个音效实例
+        soundPool: [],
+        // 初始化音效池
+        init(poolSize = 5) {
+            for (let i = 0; i < poolSize; i++) {
+                const sound = new Audio();
+                // 优先使用本地声音文件，如果不存在则使用CDN
+                sound.src = './sounds/muyu.mp3';
+                sound.onerror = () => {
+                    // 如果本地文件加载失败，使用CDN
+                    sound.src = 'https://cdn.jsdelivr.net/gh/Jogiter/assets@main/audio/muyu.mp3';
+                };
+                sound.load();
+                this.soundPool.push(sound);
+            }
+        },
+        // 播放音效
+        play() {
+            // 查找一个未播放的音效实例
+            const availableSound = this.soundPool.find(sound => sound.paused);
+            if (availableSound) {
+                availableSound.currentTime = 0;
+                availableSound.play().catch(err => console.error('播放音效失败:', err));
+            } else {
+                // 如果所有实例都在播放，创建一个新实例
+                const newSound = new Audio();
+                newSound.src = this.soundPool[0].src;
+                newSound.play().catch(err => console.error('播放音效失败:', err));
+                this.soundPool.push(newSound);
+            }
+        }
+    };
+    
+    // 初始化音效池
+    soundManager.init();
     
     // 智慧语录
     const wisdomPhrases = [
@@ -43,11 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('获取功德数失败:', error);
     }
     
-    // 点击木鱼事件
-    woodenfish.addEventListener('click', async () => {
+    // 敲击木鱼的函数
+    const hitWoodenFish = async () => {
         // 播放音效
-        hitSound.currentTime = 0;
-        hitSound.play();
+        soundManager.play();
         
         // 木鱼动画
         woodenfishImg.style.transform = 'scale(0.95)';
@@ -92,6 +125,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         } catch (error) {
             console.error('保存功德数失败:', error);
+        }
+    };
+    
+    // 点击木鱼事件
+    woodenfish.addEventListener('click', hitWoodenFish);
+    
+    // 添加键盘快捷键
+    document.addEventListener('keydown', (event) => {
+        // 空格键或回车键
+        if (event.code === 'Space' || event.code === 'Enter') {
+            // 防止页面滚动
+            event.preventDefault();
+            hitWoodenFish();
         }
     });
 }); 
