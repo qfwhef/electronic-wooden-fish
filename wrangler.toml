@@ -1,6 +1,6 @@
 name = "electronic-wooden-fish"
 compatibility_date = "2023-01-01"
-main = "functions/api/[[route]].js"
+main = "functions/api.js"
 
 # 配置KV命名空间
 kv_namespaces = [
