@@ -1,0 +1,137 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Ma Shan Zheng', cursive, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    text-align: center;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-size: 3rem;
+    color: #8b4513;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    color: #666;
+}
+
+.woodenfish-container {
+    margin: 2rem 0;
+    position: relative;
+}
+
+.woodenfish {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    display: inline-block;
+}
+
+.woodenfish:active {
+    transform: scale(0.95);
+}
+
+.woodenfish img {
+    max-width: 200px;
+    height: auto;
+    filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.2));
+}
+
+.merit-counter {
+    font-size: 1.8rem;
+    margin: 1.5rem 0;
+    color: #8b4513;
+}
+
+.merit-message {
+    height: 30px;
+    font-size: 1.5rem;
+    color: #d4af37;
+    animation: fadeOut 2s forwards;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+}
+
+.merit-message.show {
+    animation: fadeInOut 2s forwards;
+    opacity: 1;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+.wisdom-container {
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin: 2rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#wisdom-text {
+    font-size: 1.2rem;
+    color: #555;
+}
+
+footer {
+    margin-top: 2rem;
+    color: #666;
+}
+
+.small {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    color: #888;
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .woodenfish img {
+        max-width: 150px;
+    }
+    
+    .merit-counter {
+        font-size: 1.5rem;
+    }
+    
+    #wisdom-text {
+        font-size: 1rem;
+    }
+} 
