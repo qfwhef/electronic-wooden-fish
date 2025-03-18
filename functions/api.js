@@ -26,16 +26,24 @@ export async function onRequest(context) {
     // 获取功德数
     if (request.method === 'GET') {
       try {
+        console.log('开始获取功德数...');
+        
         // 查询D1数据库
         const stmt = env.DB.prepare('SELECT merit FROM merit_counter WHERE id = 1');
+        console.log('准备执行查询...');
+        
         const result = await stmt.first();
+        console.log('查询结果:', result);
         
         let merit = 0;
         if (result) {
           merit = result.merit;
+          console.log('从数据库获取到功德数:', merit);
         } else {
+          console.log('数据库中没有记录，创建新记录...');
           // 如果数据库中没有数据，创建记录
           await env.DB.prepare('INSERT INTO merit_counter (id, merit) VALUES (1, 0)').run();
+          console.log('新记录创建成功');
         }
         
         return new Response(JSON.stringify({ 
@@ -46,7 +54,8 @@ export async function onRequest(context) {
         console.error('获取功德数失败:', error);
         return new Response(JSON.stringify({ 
           success: false, 
-          error: '获取功德数失败' 
+          error: '获取功德数失败',
+          details: error.message
         }), { 
           status: 500, 
           headers 
@@ -59,11 +68,14 @@ export async function onRequest(context) {
       try {
         const data = await request.json();
         const merit = data.merit || 0;
+        console.log('准备更新功德数为:', merit);
         
         // 更新D1数据库
-        await env.DB.prepare('UPDATE merit_counter SET merit = ? WHERE id = 1')
-          .bind(merit)
-          .run();
+        const updateStmt = env.DB.prepare('UPDATE merit_counter SET merit = ? WHERE id = 1');
+        console.log('准备执行更新...');
+        
+        await updateStmt.bind(merit).run();
+        console.log('更新成功');
         
         return new Response(JSON.stringify({ 
           success: true, 
@@ -73,7 +85,8 @@ export async function onRequest(context) {
         console.error('更新功德数失败:', error);
         return new Response(JSON.stringify({ 
           success: false, 
-          error: '更新功德数失败' 
+          error: '更新功德数失败',
+          details: error.message
         }), { 
           status: 500, 
           headers 

@@ -67,11 +67,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 从服务器获取当前功德数
     try {
+        console.log('开始从服务器获取功德数...');
         const response = await fetch('/api/merit');
         const data = await response.json();
+        console.log('服务器返回数据:', data);
+        
         if (data.success && data.merit !== undefined) {
             merit = data.merit;
             meritCount.textContent = merit;
+            console.log('成功更新功德数:', merit);
+        } else {
+            console.error('服务器返回数据格式错误:', data);
         }
     } catch (error) {
         console.error('获取功德数失败:', error);
@@ -145,13 +151,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // 将功德数发送到服务器
         try {
-            await fetch('/api/merit', {
+            console.log('准备发送功德数到服务器:', merit);
+            const response = await fetch('/api/merit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ merit }),
             });
+            const data = await response.json();
+            console.log('服务器响应:', data);
+            
+            if (!data.success) {
+                console.error('保存功德数失败:', data.error);
+            }
         } catch (error) {
             console.error('保存功德数失败:', error);
         }
