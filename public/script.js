@@ -77,8 +77,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('获取功德数失败:', error);
     }
     
+    // 在点击位置显示功德消息
+    const showMeritAtPosition = (amount, x, y) => {
+        // 创建新的功德提示元素
+        const popup = document.createElement('div');
+        popup.className = 'merit-popup';
+        popup.textContent = `功德 +${amount}`;
+        
+        // 设置位置
+        popup.style.left = `${x}px`;
+        popup.style.top = `${y}px`;
+        
+        // 添加到页面
+        document.body.appendChild(popup);
+        
+        // 动画结束后移除元素
+        setTimeout(() => {
+            document.body.removeChild(popup);
+        }, 1500);
+    };
+    
+    // 在木鱼右下方显示功德消息
+    const showMeritAtWoodenFish = (amount) => {
+        // 获取木鱼元素的位置
+        const woodenfishRect = woodenfish.getBoundingClientRect();
+        const x = woodenfishRect.right - 80; // 距离右边缘100px
+        const y = woodenfishRect.bottom - 75; // 距离底部50px
+        
+        showMeritAtPosition(amount, x, y);
+    };
+    
     // 敲击木鱼的函数
-    const hitWoodenFish = async () => {
+    const hitWoodenFish = async (event) => {
         // 播放音效
         soundManager.play();
         
@@ -95,15 +125,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 0.5% 的概率获得额外功德
         if (luckyChance < 0.005) {
             gainedMerit = Math.floor(Math.random() * 100) + 1;
-            
-            // 显示特殊消息
-            meritMessage.textContent = `+${gainedMerit} 功德!`;
-            meritMessage.classList.add('show');
-            
-            // 移除动画类以便下次触发
-            setTimeout(() => {
-                meritMessage.classList.remove('show');
-            }, 2000);
+        }
+        
+        // 如果是鼠标点击，在点击位置显示功德
+        if (event && event.clientX) {
+            showMeritAtPosition(gainedMerit, event.clientX, event.clientY);
+        } else {
+            // 如果是键盘触发，在木鱼右下方显示
+            showMeritAtWoodenFish(gainedMerit);
         }
         
         // 更新功德计数
@@ -132,12 +161,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     woodenfish.addEventListener('click', hitWoodenFish);
     
     // 添加键盘快捷键
+    let keyDownTime = 0;
+    const KEY_REPEAT_DELAY = 50; // 50毫秒的重复延迟
+    
     document.addEventListener('keydown', (event) => {
         // 空格键或回车键
         if (event.code === 'Space' || event.code === 'Enter') {
             // 防止页面滚动
             event.preventDefault();
-            hitWoodenFish();
+            
+            // 检查是否是新的按键按下
+            const now = Date.now();
+            if (now - keyDownTime > KEY_REPEAT_DELAY) {
+                keyDownTime = now;
+                hitWoodenFish();
+            }
         }
     });
-}); 
+});

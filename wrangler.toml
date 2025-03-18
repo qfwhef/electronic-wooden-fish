@@ -2,11 +2,6 @@ name = "electronic-wooden-fish"
 compatibility_date = "2023-01-01"
 main = "functions/api.js"
 
-# 配置KV命名空间
-kv_namespaces = [
-  { binding = "MERIT_STORE", id = "a8edf385cdcb40f989a97ff266e576be" }
-]
-
 # 配置D1数据库
 [[d1_databases]]
 binding = "DB"
@@ -14,4 +9,4 @@ database_name = "wooden_fish_db"
 database_id = "630ee155-4a06-4bd6-904b-a5c71ab5a09b"
 
 [site]
-bucket = "public" 
+bucket = "public"

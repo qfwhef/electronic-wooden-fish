@@ -26,30 +26,16 @@ export async function onRequest(context) {
     // 获取功德数
     if (request.method === 'GET') {
       try {
-        // 尝试从KV存储中获取功德数
-        let merit = await env.MERIT_STORE.get('total_merit');
+        // 查询D1数据库
+        const stmt = env.DB.prepare('SELECT merit FROM merit_counter WHERE id = 1');
+        const result = await stmt.first();
         
-        // 如果KV中没有数据，尝试从D1数据库获取
-        if (merit === null) {
-          // 查询D1数据库
-          const stmt = env.DB.prepare('SELECT merit FROM merit_counter WHERE id = 1');
-          const result = await stmt.first();
-          
-          if (result) {
-            merit = result.merit;
-          } else {
-            // 如果数据库中也没有数据，初始化为0
-            merit = 0;
-            
-            // 在D1数据库中创建记录
-            await env.DB.prepare('INSERT INTO merit_counter (id, merit) VALUES (1, 0)').run();
-          }
-          
-          // 将数据同步到KV存储
-          await env.MERIT_STORE.put('total_merit', merit.toString());
+        let merit = 0;
+        if (result) {
+          merit = result.merit;
         } else {
-          // 将字符串转换为数字
-          merit = parseInt(merit, 10);
+          // 如果数据库中没有数据，创建记录
+          await env.DB.prepare('INSERT INTO merit_counter (id, merit) VALUES (1, 0)').run();
         }
         
         return new Response(JSON.stringify({ 
@@ -73,9 +59,6 @@ export async function onRequest(context) {
       try {
         const data = await request.json();
         const merit = data.merit || 0;
-        
-        // 更新KV存储
-        await env.MERIT_STORE.put('total_merit', merit.toString());
         
         // 更新D1数据库
         await env.DB.prepare('UPDATE merit_counter SET merit = ? WHERE id = 1')

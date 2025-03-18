@@ -68,7 +68,6 @@ h1 {
     height: 30px;
     font-size: 1.5rem;
     color: #f5c518; /* 金黄色功德消息 */
-    animation: fadeOut 2s forwards;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -76,18 +75,55 @@ h1 {
     pointer-events: none;
     opacity: 0;
     text-shadow: 0 0 10px rgba(245, 197, 24, 0.7); /* 金色光晕 */
+    font-weight: bold;
+    z-index: 1000;
 }
 
 .merit-message.show {
-    animation: fadeInOut 2s forwards;
+    animation: floatUp 1.5s forwards;
     opacity: 1;
 }
 
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    80% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+@keyframes floatUp {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    20% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -100%) scale(1);
+    }
+}
+
+/* 用于多个功德提示的动画 */
+.merit-popup {
+    position: fixed;
+    color: #f5c518;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(245, 197, 24, 0.7);
+    pointer-events: none;
+    animation: floatUpPopup 1.5s forwards;
+    z-index: 1000;
+}
+
+@keyframes floatUpPopup {
+    0% { 
+        opacity: 0; 
+        transform: translateY(0) scale(0.8);
+    }
+    20% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1.2);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-100px) scale(1);
+    }
 }
 
 .wisdom-container {
