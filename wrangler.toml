@@ -15,4 +15,8 @@ bucket = "public"
 [env.development]
 d1_databases = [
   { binding = "DB", database_name = "wooden_fish_db_dev", database_id = "630ee155-4a06-4bd6-904b-a5c71ab5a09b" }
+<<<<<<< HEAD
 ]
+=======
+]
+>>>>>>> 74c93bc2b57166b55678c4b79f99a7ee6d33e27e

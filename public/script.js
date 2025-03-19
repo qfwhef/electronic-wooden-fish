@@ -82,6 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error('获取功德数失败:', error);
+        // 如果请求失败，至少显示初始功德为0
+        meritCount.textContent = '0';
     }
     
     // 在点击位置显示功德消息
