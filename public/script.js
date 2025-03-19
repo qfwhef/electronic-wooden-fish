@@ -68,7 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 从服务器获取当前功德数
     try {
         console.log('开始从服务器获取功德数...');
-        const response = await fetch('https://muyv.vlesswbh.sbs/api/merit');
+        // 使用相对路径，让浏览器自动处理域名
+        const response = await fetch('/api/merit');
         const data = await response.json();
         console.log('服务器返回数据:', data);
         
@@ -78,9 +79,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('成功更新功德数:', merit);
         } else {
             console.error('服务器返回数据格式错误:', data);
+            // 如果请求失败，至少显示初始功德为0
+            meritCount.textContent = '0';
         }
     } catch (error) {
         console.error('获取功德数失败:', error);
+        // 如果请求失败，至少显示初始功德为0
+        meritCount.textContent = '0';
     }
     
     // 在点击位置显示功德消息
@@ -152,7 +157,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 将功德数发送到服务器
         try {
             console.log('准备发送功德数到服务器:', merit);
-            const response = await fetch('https://muyv.vlesswbh.sbs/api/merit', {
+            // 使用相对路径，让浏览器自动处理域名
+            const response = await fetch('/api/merit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
