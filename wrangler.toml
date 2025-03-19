@@ -10,3 +10,9 @@ database_id = "630ee155-4a06-4bd6-904b-a5c71ab5a09b"
 
 [site]
 bucket = "public"
+
+# 开发环境的D1数据库（本地开发使用）
+[env.development]
+d1_databases = [
+  { binding = "DB", database_name = "wooden_fish_db_dev", database_id = "630ee155-4a06-4bd6-904b-a5c71ab5a09b" }
+]
