@@ -62,9 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "心中有爱，举手投足皆是善。"
     ];
     
-    // 初始化功德计数
-    let merit = 0;
-    
+
     // 从服务器获取当前功德数
     try {
         console.log('开始从服务器获取功德数...');
@@ -84,8 +82,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (error) {
         console.error('获取功德数失败:', error);
-        // 如果请求失败，至少显示初始功德为0
-        meritCount.textContent = '0';
     }
     
     // 在点击位置显示功德消息
