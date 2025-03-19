@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            margin: 10px 0;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>API测试工具</h1>
+    
+    <h2>获取功德数</h2>
+    <button id="get-merit">测试GET /api/merit</button>
+    <h3>响应:</h3>
+    <pre id="get-response"></pre>
+    
+    <h2>更新功德数</h2>
+    <input type="number" id="merit-value" value="10" min="0">
+    <button id="post-merit">测试POST /api/merit</button>
+    <h3>响应:</h3>
+    <pre id="post-response"></pre>
+    
+    <script>
+        document.getElementById('get-merit').addEventListener('click', async () => {
+            const responseElem = document.getElementById('get-response');
+            responseElem.innerHTML = "加载中...";
+            
+            try {
+                const response = await fetch('/api/merit');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseElem.innerHTML = `<span class="success">状态: ${response.status} ${response.statusText}</span>\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseElem.innerHTML = `<span class="error">状态: ${response.status} ${response.statusText}</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseElem.innerHTML = `<span class="error">错误: ${error.message}</span>`;
+            }
+        });
+        
+        document.getElementById('post-merit').addEventListener('click', async () => {
+            const responseElem = document.getElementById('post-response');
+            const meritValue = parseInt(document.getElementById('merit-value').value, 10);
+            responseElem.innerHTML = "提交中...";
+            
+            try {
+                const response = await fetch('/api/merit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ merit: meritValue })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseElem.innerHTML = `<span class="success">状态: ${response.status} ${response.statusText}</span>\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    responseElem.innerHTML = `<span class="error">状态: ${response.status} ${response.statusText}</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                responseElem.innerHTML = `<span class="error">错误: ${error.message}</span>`;
+            }
+        });
+    </script>
+</body>
+</html> 
