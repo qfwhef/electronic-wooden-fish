@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 从服务器获取当前功德数
     try {
         console.log('开始从服务器获取功德数...');
-        const response = await fetch('/api/merit');
+        const response = await fetch('https://muyv.vlesswbh.sbs/api/merit');
         const data = await response.json();
         console.log('服务器返回数据:', data);
         
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 将功德数发送到服务器
         try {
             console.log('准备发送功德数到服务器:', merit);
-            const response = await fetch('/api/merit', {
+            const response = await fetch('https://muyv.vlesswbh.sbs/api/merit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
