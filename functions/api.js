@@ -28,6 +28,11 @@ export async function onRequest(context) {
       try {
         console.log('开始获取功德数...');
         
+        // 检查数据库连接
+        if (!env.DB) {
+          throw new Error('数据库连接未初始化');
+        }
+        
         // 查询D1数据库
         const stmt = env.DB.prepare('SELECT merit FROM merit_counter WHERE id = 1');
         console.log('准备执行查询...');
@@ -42,7 +47,8 @@ export async function onRequest(context) {
         } else {
           console.log('数据库中没有记录，创建新记录...');
           // 如果数据库中没有数据，创建记录
-          await env.DB.prepare('INSERT INTO merit_counter (id, merit) VALUES (1, 0)').run();
+          const insertStmt = env.DB.prepare('INSERT INTO merit_counter (id, merit) VALUES (1, 0)');
+          await insertStmt.run();
           console.log('新记录创建成功');
         }
         
@@ -55,7 +61,8 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ 
           success: false, 
           error: '获取功德数失败',
-          details: error.message
+          details: error.message,
+          stack: error.stack
         }), { 
           status: 500, 
           headers 
@@ -69,6 +76,11 @@ export async function onRequest(context) {
         const data = await request.json();
         const merit = data.merit || 0;
         console.log('准备更新功德数为:', merit);
+        
+        // 检查数据库连接
+        if (!env.DB) {
+          throw new Error('数据库连接未初始化');
+        }
         
         // 更新D1数据库
         const updateStmt = env.DB.prepare('UPDATE merit_counter SET merit = ? WHERE id = 1');
@@ -86,7 +98,8 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ 
           success: false, 
           error: '更新功德数失败',
-          details: error.message
+          details: error.message,
+          stack: error.stack
         }), { 
           status: 500, 
           headers 
