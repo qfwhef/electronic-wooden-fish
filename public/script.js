@@ -7,7 +7,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 初始化功德值
     let merit = 0;
-    let isHitting = false; // 标记是否正在敲击，防止重复提交
+    
+    // 快速敲击优化 - 批量更新变量
+    let pendingMerit = 0;  // 等待发送的功德值
+    let isUpdating = false; // 是否正在更新到服务器
+    let updateScheduled = false; // 是否已安排更新
     
     // 数据库操作函数
     const dbManager = {
@@ -39,11 +43,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         },
         
-        // 将新增功德发送到服务器
+        // 将新增功德发送到服务器，并返回最新的总功德数
         async addMeritToServer(meritToAdd) {
-            if (isHitting) return false; // 如果正在处理敲击，忽略此次提交
-            
-            isHitting = true; // 标记正在处理敲击
+            if (meritToAdd <= 0) return null; // 不需要更新
             
             try {
                 const response = await fetch('/api', {
@@ -61,22 +63,68 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 更新本地总功德计数
-                    merit = data.meritCount;
-                    meritCount.textContent = merit;
-                    return true;
+                    return data.meritCount;
                 } else {
                     console.error('添加功德失败:', data.error);
-                    return false;
+                    return null;
                 }
             } catch (error) {
                 console.error('添加功德数据错误:', error);
-                return false;
-            } finally {
-                // 无论成功失败，完成后重置标记
-                isHitting = false;
+                return null;
             }
         }
+    };
+    
+    // 实现批量更新功德到服务器
+    const batchUpdateMerit = async () => {
+        // 如果已经在更新中，或者没有待更新的功德，则不执行
+        if (isUpdating || pendingMerit <= 0) return;
+        
+        isUpdating = true;
+        updateScheduled = false;
+        
+        // 获取当前待更新的功德数量并重置
+        const meritToUpdate = pendingMerit;
+        pendingMerit = 0;
+        
+        // 发送到服务器
+        const newTotalMerit = await dbManager.addMeritToServer(meritToUpdate);
+        
+        // 更新显示的功德数
+        if (newTotalMerit !== null) {
+            merit = newTotalMerit;
+            meritCount.textContent = merit;
+        } else {
+            // 更新失败，将未能更新的功德值加回待更新列表
+            pendingMerit += meritToUpdate;
+        }
+        
+        isUpdating = false;
+        
+        // 如果在这次更新过程中又积累了功德，则再次安排更新
+        if (pendingMerit > 0 && !updateScheduled) {
+            scheduleUpdate();
+        }
+    };
+    
+    // 安排一次更新（延迟300毫秒，避免过于频繁的请求）
+    const scheduleUpdate = () => {
+        if (!updateScheduled) {
+            updateScheduled = true;
+            setTimeout(batchUpdateMerit, 300);
+        }
+    };
+    
+    // 将新获得的功德添加到待更新列表，并更新显示
+    const addMerit = (amount) => {
+        pendingMerit += amount;
+        
+        // 立即更新显示（乐观更新）
+        merit += amount;
+        meritCount.textContent = merit;
+        
+        // 安排发送到服务器
+        scheduleUpdate();
     };
     
     // 初始化功德，从服务器获取总功德数
@@ -185,23 +233,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         showMeritAtPosition(amount, x, y);
     };
     
-    // 防抖函数，确保短时间内多次敲击不会发送过多请求
-    const debounce = (func, wait) => {
-        let timeout;
-        
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    };
-    
     // 敲击木鱼的函数
-    const hitWoodenFish = async (event) => {
+    const hitWoodenFish = (event) => {
         // 播放音效
         soundManager.play();
         
@@ -228,8 +261,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMeritAtWoodenFish(gainedMerit);
         }
         
-        // 向服务器提交新增的功德
-        await dbManager.addMeritToServer(gainedMerit);
+        // 添加到待更新的功德列表
+        addMerit(gainedMerit);
         
         // 随机显示智慧语录
         const randomIndex = Math.floor(Math.random() * wisdomPhrases.length);
@@ -241,7 +274,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 添加键盘快捷键
     let keyDownTime = 0;
-    const KEY_REPEAT_DELAY = 100; // 增加到100毫秒的重复延迟
+    const KEY_REPEAT_DELAY = 80; // 降低到80毫秒的重复延迟，让敲击更流畅
     
     document.addEventListener('keydown', (event) => {
         // 空格键或回车键
@@ -255,6 +288,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 keyDownTime = now;
                 hitWoodenFish();
             }
+        }
+    });
+    
+    // 在页面关闭或刷新前，确保将待更新的功德数发送到服务器
+    window.addEventListener('beforeunload', () => {
+        if (pendingMerit > 0) {
+            // 使用同步请求确保数据在页面关闭前发送
+            navigator.sendBeacon('/api', JSON.stringify({ meritToAdd: pendingMerit }));
         }
     });
 });
