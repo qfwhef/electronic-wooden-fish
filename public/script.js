@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 数据库操作函数
     const dbManager = {
-        // 从服务器获取功德数据
+        // 从服务器获取总功德数据
         async fetchMeritFromServer() {
             try {
                 const response = await fetch('/api', {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 
                 if (!response.ok) {
-                    throw new Error('获取功德数据失败');
+                    throw new Error('获取总功德数据失败');
                 }
                 
                 const data = await response.json();
@@ -29,64 +29,62 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.success) {
                     return data.meritCount;
                 } else {
-                    console.error('获取功德失败:', data.error);
+                    console.error('获取总功德失败:', data.error);
                     return null;
                 }
             } catch (error) {
-                console.error('获取功德数据错误:', error);
+                console.error('获取总功德数据错误:', error);
                 return null;
             }
         },
         
-        // 将功德数据保存到服务器
-        async saveMeritToServer(meritValue) {
+        // 将新增功德发送到服务器
+        async addMeritToServer(meritToAdd) {
             try {
                 const response = await fetch('/api', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ meritCount: meritValue })
+                    body: JSON.stringify({ meritToAdd })
                 });
                 
                 if (!response.ok) {
-                    throw new Error('保存功德数据失败');
+                    throw new Error('添加功德数据失败');
                 }
                 
                 const data = await response.json();
                 
-                if (!data.success) {
-                    console.error('保存功德失败:', data.error);
+                if (data.success) {
+                    // 更新本地总功德计数
+                    merit = data.meritCount;
+                    meritCount.textContent = merit;
+                    return true;
+                } else {
+                    console.error('添加功德失败:', data.error);
+                    return false;
                 }
-                
-                return data.success;
             } catch (error) {
-                console.error('保存功德数据错误:', error);
+                console.error('添加功德数据错误:', error);
                 return false;
             }
         }
     };
     
-    // 初始化功德，优先从数据库获取，如果失败则从本地存储获取
+    // 初始化功德，从服务器获取总功德数
     const initMerit = async () => {
-        // 尝试从服务器获取功德
+        // 从服务器获取总功德
         const serverMerit = await dbManager.fetchMeritFromServer();
         
         if (serverMerit !== null) {
             // 使用服务器数据
             merit = serverMerit;
+            // 显示功德值
+            meritCount.textContent = merit;
         } else {
-            // 如果服务器获取失败，使用本地存储
-            merit = parseInt(localStorage.getItem('merit') || '0', 10);
-            
-            // 尝试将本地数据同步到服务器
-            dbManager.saveMeritToServer(merit).catch(err => 
-                console.error('同步本地功德到服务器失败:', err)
-            );
+            console.error('无法获取总功德数，显示为0');
+            meritCount.textContent = '0';
         }
-        
-        // 显示功德值
-        meritCount.textContent = merit;
     };
     
     // 执行初始化
@@ -179,34 +177,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         showMeritAtPosition(amount, x, y);
     };
     
-    // 节流函数，限制保存到服务器的频率
-    const throttle = (func, limit) => {
-        let inThrottle;
-        let lastSaved = 0;
-        
-        return function() {
-            const args = arguments;
-            const context = this;
-            
-            // 检查是否应该保存到服务器
-            const now = Date.now();
-            if (!inThrottle || now - lastSaved >= limit) {
-                lastSaved = now;
-                inThrottle = true;
-                
-                // 保存到服务器
-                setTimeout(() => {
-                    dbManager.saveMeritToServer(merit).catch(err => 
-                        console.error('保存功德到服务器失败:', err)
-                    );
-                }, 0);
-            }
-            
-            // 执行原始函数
-            return func.apply(context, args);
-        };
-    };
-    
     // 敲击木鱼的函数
     const hitWoodenFish = async (event) => {
         // 播放音效
@@ -235,29 +205,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMeritAtWoodenFish(gainedMerit);
         }
         
-        // 更新功德计数
-        merit += gainedMerit;
-        meritCount.textContent = merit;
-        
-        // 将功德数保存到本地存储
-        localStorage.setItem('merit', merit.toString());
+        // 向服务器提交新增的功德
+        dbManager.addMeritToServer(gainedMerit).catch(err => 
+            console.error('添加功德到服务器失败:', err)
+        );
         
         // 随机显示智慧语录
         const randomIndex = Math.floor(Math.random() * wisdomPhrases.length);
         wisdomText.textContent = wisdomPhrases[randomIndex];
     };
     
-    // 使用节流函数包装敲击木鱼函数，限制10秒最多保存一次到服务器
-    const throttledSaver = throttle(() => {}, 10000);
-    
-    // 包装木鱼点击函数，增加节流保存功能
-    const hitWoodenFishAndSave = (event) => {
-        hitWoodenFish(event);
-        throttledSaver();
-    };
-    
     // 点击木鱼事件
-    woodenfish.addEventListener('click', hitWoodenFishAndSave);
+    woodenfish.addEventListener('click', hitWoodenFish);
     
     // 添加键盘快捷键
     let keyDownTime = 0;
@@ -273,14 +232,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const now = Date.now();
             if (now - keyDownTime > KEY_REPEAT_DELAY) {
                 keyDownTime = now;
-                hitWoodenFishAndSave();
+                hitWoodenFish();
             }
         }
-    });
-    
-    // 在页面关闭或刷新前保存功德数据到服务器
-    window.addEventListener('beforeunload', () => {
-        // 使用同步请求确保数据在页面关闭前发送
-        navigator.sendBeacon('/api', JSON.stringify({ meritCount: merit }));
     });
 });

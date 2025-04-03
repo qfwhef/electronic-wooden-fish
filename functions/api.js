@@ -28,24 +28,20 @@ function setCookie(response, userId) {
   response.headers.set('Set-Cookie', `userId=${userId}; Expires=${expires.toUTCString()}; Path=/; SameSite=Strict`);
 }
 
-// 获取用户功德数据
+// 获取总功德数据
 export async function onRequestGet(context) {
-  const { request, env } = context;
-  
-  // 获取用户ID
-  const userId = getUserId(request);
+  const { env } = context;
   
   try {
-    // 查询数据库中的用户功德记录
+    // 查询数据库中的总功德记录
     const stmt = await env.DB.prepare(
-      'SELECT merit_count FROM merit_records WHERE user_id = ?'
-    ).bind(userId);
+      'SELECT merit_count FROM total_merit WHERE id = 1'
+    );
     
     const result = await stmt.first();
     
     // 准备响应
     const data = {
-      userId,
       meritCount: result ? result.merit_count : 0,
       success: true
     };
@@ -57,16 +53,13 @@ export async function onRequestGet(context) {
       }
     });
     
-    // 设置Cookie
-    setCookie(response, userId);
-    
     return response;
   } catch (error) {
     // 处理错误
-    console.error('获取功德数据失败:', error);
+    console.error('获取总功德数据失败:', error);
     
     return new Response(
-      JSON.stringify({ success: false, error: '获取功德数据失败' }),
+      JSON.stringify({ success: false, error: '获取总功德数据失败' }),
       {
         status: 500,
         headers: {
@@ -77,52 +70,55 @@ export async function onRequestGet(context) {
   }
 }
 
-// 更新用户功德数据
+// 更新总功德数据
 export async function onRequestPost(context) {
   const { request, env } = context;
-  
-  // 获取用户ID
-  const userId = getUserId(request);
   
   try {
     // 解析请求体
     const data = await request.json();
-    const meritCount = parseInt(data.meritCount, 10);
+    const meritToAdd = parseInt(data.meritToAdd, 10) || 1; // 默认增加1点功德
     
-    if (isNaN(meritCount)) {
+    if (isNaN(meritToAdd)) {
       throw new Error('无效的功德数值');
     }
     
-    // 更新或插入用户功德记录
-    const stmt = await env.DB.prepare(`
-      INSERT INTO merit_records (user_id, merit_count, last_updated)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT (user_id) DO UPDATE
-      SET merit_count = ?, last_updated = CURRENT_TIMESTAMP
-    `).bind(userId, meritCount, meritCount);
+    // 获取当前总功德数
+    const getStmt = await env.DB.prepare(
+      'SELECT merit_count FROM total_merit WHERE id = 1'
+    );
     
-    await stmt.run();
+    const currentMerit = await getStmt.first();
+    const newMeritCount = (currentMerit ? currentMerit.merit_count : 0) + meritToAdd;
+    
+    // 更新总功德记录
+    const updateStmt = await env.DB.prepare(`
+      UPDATE total_merit
+      SET merit_count = ?, last_updated = CURRENT_TIMESTAMP
+      WHERE id = 1
+    `).bind(newMeritCount);
+    
+    await updateStmt.run();
     
     // 创建响应
-    const response = new Response(
-      JSON.stringify({ success: true, userId, meritCount }),
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        meritCount: newMeritCount,
+        meritAdded: meritToAdd 
+      }),
       {
         headers: {
           'Content-Type': 'application/json'
         }
       }
     );
-    
-    // 设置Cookie
-    setCookie(response, userId);
-    
-    return response;
   } catch (error) {
     // 处理错误
-    console.error('更新功德数据失败:', error);
+    console.error('更新总功德数据失败:', error);
     
     return new Response(
-      JSON.stringify({ success: false, error: '更新功德数据失败' }),
+      JSON.stringify({ success: false, error: '更新总功德数据失败' }),
       {
         status: 500,
         headers: {

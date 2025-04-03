@@ -1,18 +1,17 @@
 # 电子木鱼
 
-一个简单的电子木鱼网站，每点击一次木鱼功德+1，有概率点一次加1~100功德。功德数据会自动保存到Cloudflare D1数据库中。
+一个简单的电子木鱼网站，每点击一次木鱼功德+1，有概率点一次加1~100功德。所有用户的功德会累计到网站的总功德数中，记录全球用户共同积累的善行。
 
 ## 项目特点
 
 - 点击木鱼增加功德
 - 有0.5%的概率获得1-100的随机功德
 - 显示随机的佛家智慧语录
-- 使用Cloudflare D1数据库存储功德数据
-- 基于用户ID识别不同用户，自动同步功德数据
+- 使用Cloudflare D1数据库存储网站总功德数
+- 所有用户共同贡献到同一个功德池
 - 优化的声音播放系统，支持快速连续敲击
 - 暗黑主题设计，金色光晕效果
 - 支持键盘快捷键（空格键或回车键）敲击木鱼
-- 节流保存技术，减少数据库写入次数，提高性能
 
 ## 项目结构
 
@@ -27,7 +26,7 @@ electronic-wooden-fish/
 │   ├── styles.css          # 样式文件
 │   └── script.js           # 前端脚本
 ├── functions/              # Cloudflare Functions目录
-│   └── api.js              # API处理文件，处理功德数据的获取和保存
+│   └── api.js              # API处理文件，处理功德数据的获取和增加
 ├── _routes.json            # 路由配置文件
 ├── schema.sql              # 数据库初始化SQL
 ├── wrangler.toml           # Cloudflare配置文件
@@ -36,26 +35,25 @@ electronic-wooden-fish/
 
 ## 数据库功能
 
-本项目使用Cloudflare D1数据库来存储用户的功德数据。主要功能包括：
+本项目使用Cloudflare D1数据库来存储网站的总功德数。主要功能包括：
 
-1. **用户识别**：通过浏览器Cookie识别用户，生成唯一用户ID
-2. **功德数据存储**：将用户的功德数据存储在数据库中
-3. **数据同步**：自动同步本地功德数据和数据库数据
-4. **节流保存**：限制数据库写入频率，避免频繁写入
-5. **优雅退出保存**：在用户关闭页面前自动保存功德数据
+1. **总功德记录**：记录所有用户累计敲击木鱼所获得的总功德数
+2. **实时更新**：每次敲击木鱼时，功德数立即添加到总功德数中
+3. **全球同步**：所有访问网站的用户都看到相同的总功德数
+4. **随机奖励**：每次敲击有几率获得额外功德，所有获得的功德都会添加到总功德池中
 
 ### 数据表结构
 
 ```sql
-CREATE TABLE IF NOT EXISTS merit_records (
-    id INTEGER PRIMARY KEY,
-    user_id TEXT NOT NULL,
+-- 总功德数表
+CREATE TABLE IF NOT EXISTS total_merit (
+    id INTEGER PRIMARY KEY CHECK (id = 1),  -- 确保只有一行记录
     merit_count INTEGER NOT NULL DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 创建索引以便快速查找用户数据
-CREATE INDEX IF NOT EXISTS idx_merit_records_user_id ON merit_records(user_id);
+-- 初始化总功德数（如果表为空）
+INSERT OR IGNORE INTO total_merit (id, merit_count) VALUES (1, 0);
 ```
 
 ## 部署指南
