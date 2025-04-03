@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 初始化功德值
     let merit = 0;
+    let isHitting = false; // 标记是否正在敲击，防止重复提交
     
     // 数据库操作函数
     const dbManager = {
@@ -40,6 +41,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // 将新增功德发送到服务器
         async addMeritToServer(meritToAdd) {
+            if (isHitting) return false; // 如果正在处理敲击，忽略此次提交
+            
+            isHitting = true; // 标记正在处理敲击
+            
             try {
                 const response = await fetch('/api', {
                     method: 'POST',
@@ -67,6 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (error) {
                 console.error('添加功德数据错误:', error);
                 return false;
+            } finally {
+                // 无论成功失败，完成后重置标记
+                isHitting = false;
             }
         }
     };
@@ -177,6 +185,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         showMeritAtPosition(amount, x, y);
     };
     
+    // 防抖函数，确保短时间内多次敲击不会发送过多请求
+    const debounce = (func, wait) => {
+        let timeout;
+        
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    };
+    
     // 敲击木鱼的函数
     const hitWoodenFish = async (event) => {
         // 播放音效
@@ -206,9 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         // 向服务器提交新增的功德
-        dbManager.addMeritToServer(gainedMerit).catch(err => 
-            console.error('添加功德到服务器失败:', err)
-        );
+        await dbManager.addMeritToServer(gainedMerit);
         
         // 随机显示智慧语录
         const randomIndex = Math.floor(Math.random() * wisdomPhrases.length);
@@ -220,7 +241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 添加键盘快捷键
     let keyDownTime = 0;
-    const KEY_REPEAT_DELAY = 50; // 50毫秒的重复延迟
+    const KEY_REPEAT_DELAY = 100; // 增加到100毫秒的重复延迟
     
     document.addEventListener('keydown', (event) => {
         // 空格键或回车键

@@ -1,33 +1,3 @@
-// 生成唯一的用户ID
-function generateUserId() {
-  return 'user_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-}
-
-// 获取用户ID
-function getUserId(request) {
-  // 从Cookie中获取用户ID
-  const cookies = request.headers.get('Cookie') || '';
-  const userCookie = cookies.split('; ').find(c => c.startsWith('userId='));
-  let userId = userCookie ? userCookie.split('=')[1] : null;
-  
-  // 如果没有用户ID，创建一个新的
-  if (!userId) {
-    userId = generateUserId();
-  }
-  
-  return userId;
-}
-
-// 设置Cookie
-function setCookie(response, userId) {
-  // 设置Cookie过期时间为一年
-  const expires = new Date();
-  expires.setFullYear(expires.getFullYear() + 1);
-  
-  // 添加Cookie到响应头
-  response.headers.set('Set-Cookie', `userId=${userId}; Expires=${expires.toUTCString()}; Path=/; SameSite=Strict`);
-}
-
 // 获取总功德数据
 export async function onRequestGet(context) {
   const { env } = context;
