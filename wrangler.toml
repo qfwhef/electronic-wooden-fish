@@ -1,0 +1,7 @@
+name = "electronic-wooden-fish"
+compatibility_date = "2023-12-01"
+
+[[d1_databases]]
+binding = "DB"  # 这里使用的是 DB 绑定名称
+database_name = "wooden_fish_db"
+database_id = "wooden_fish_db"  # 此处应使用实际的数据库 ID 

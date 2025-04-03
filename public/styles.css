@@ -1,0 +1,192 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Ma Shan Zheng', cursive, sans-serif;
+    background: #121212; /* 深黑色背景 */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #e0e0e0; /* 浅灰色文字，提高可读性 */
+    line-height: 1.6;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    text-align: center;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-size: 3rem;
+    color: #f5c518; /* 金黄色标题 */
+    text-shadow: 0 0 10px rgba(245, 197, 24, 0.5); /* 金色光晕 */
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    color: #b0b0b0; /* 浅灰色副标题 */
+}
+
+.woodenfish-container {
+    margin: 2rem 0;
+    position: relative;
+}
+
+.woodenfish {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    display: inline-block;
+}
+
+.woodenfish:active {
+    transform: scale(0.95);
+}
+
+.woodenfish img {
+    max-width: 200px;
+    height: auto;
+    filter: drop-shadow(0 0 15px rgba(245, 197, 24, 0.3)); /* 金色光晕 */
+}
+
+.merit-counter {
+    font-size: 1.8rem;
+    margin: 1.5rem 0;
+    color: #f5c518; /* 金黄色功德计数 */
+}
+
+.merit-message {
+    height: 30px;
+    font-size: 1.5rem;
+    color: #f5c518; /* 金黄色功德消息 */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+    text-shadow: 0 0 10px rgba(245, 197, 24, 0.7); /* 金色光晕 */
+    font-weight: bold;
+    z-index: 1000;
+}
+
+.merit-message.show {
+    animation: floatUp 1.5s forwards;
+    opacity: 1;
+}
+
+@keyframes floatUp {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    20% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -100%) scale(1);
+    }
+}
+
+/* 用于多个功德提示的动画 */
+.merit-popup {
+    position: fixed;
+    color: #f5c518;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(245, 197, 24, 0.7);
+    pointer-events: none;
+    animation: floatUpPopup 1.5s forwards;
+    z-index: 1000;
+}
+
+@keyframes floatUpPopup {
+    0% { 
+        opacity: 0; 
+        transform: translateY(0) scale(0.8);
+    }
+    20% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1.2);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-100px) scale(1);
+    }
+}
+
+.wisdom-container {
+    background-color: rgba(30, 30, 30, 0.7); /* 深灰色半透明背景 */
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin: 2rem 0;
+    box-shadow: 0 0 10px rgba(245, 197, 24, 0.2); /* 金色光晕 */
+    border: 1px solid rgba(245, 197, 24, 0.1); /* 金色边框 */
+}
+
+#wisdom-text {
+    font-size: 1.2rem;
+    color: #d0d0d0; /* 浅灰色智慧语录 */
+}
+
+footer {
+    margin-top: 2rem;
+    color: #909090; /* 灰色页脚 */
+}
+
+.small {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    color: #707070; /* 深灰色小字 */
+}
+
+/* 键盘提示 */
+.keyboard-hint {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #707070; /* 深灰色提示 */
+}
+
+.key {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background-color: #2a2a2a; /* 深灰色按键背景 */
+    border-radius: 4px;
+    margin: 0 0.2rem;
+    border: 1px solid #3a3a3a; /* 灰色边框 */
+    box-shadow: 0 2px 0 #3a3a3a; /* 按键阴影 */
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .woodenfish img {
+        max-width: 150px;
+    }
+    
+    .merit-counter {
+        font-size: 1.5rem;
+    }
+    
+    #wisdom-text {
+        font-size: 1rem;
+    }
+} 
